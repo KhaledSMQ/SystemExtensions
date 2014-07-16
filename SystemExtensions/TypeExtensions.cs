@@ -5,6 +5,11 @@ namespace SystemExtensions
 {
     public static class TypeExtensions
     {
+        /// <summary>
+        /// Gets the underlying type of a MemberInfo.
+        /// </summary>
+        /// <param name="member">The <see cref="MemberInfo"/> to get the type of.</param>
+        /// <returns>The type of the member.</returns>
         public static Type GetUnderlyingType(this MemberInfo member)
         {
             switch (member.MemberType)

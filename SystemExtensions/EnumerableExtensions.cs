@@ -1,5 +1,7 @@
+#define CONTRACTS_FULL
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using JetBrains.Annotations;
 
@@ -23,6 +25,8 @@ namespace SystemExtensions
             if (predicate == null)
                 throw new ArgumentNullException("predicate");
 
+            Contract.EndContractBlock();
+
             return source.First(t => !predicate(t));
         }
 
@@ -30,7 +34,7 @@ namespace SystemExtensions
         /// Returns the first element in a sequence that does not satisfy a specified condition or a default value if no such element is found.
         /// </summary>
         /// <returns>
-        /// The first element in the sequence that does not pass the test in the specified predicate function, or default(<paramref name="TSource"/>) if no such element is found.
+        /// The first element in the sequence that does not pass the test in the specified predicate function, or default(<typeparamref name="TSource"/> name="TSource"/>) if no such element is found.
         /// </returns>
         /// <param name="source">An <see cref="T:System.Collections.Generic.IEnumerable`1"/> to return an element from.</param>
         /// <param name="predicate">A function to test each element for a complement condition.</param>
@@ -68,7 +72,7 @@ namespace SystemExtensions
         /// Returns the first element in a sequence that does not satisfy a specified condition or a default value if no such element is found, and throws an exception if more than one such element exists.
         /// </summary>
         /// <returns>
-        /// The single element in the sequence that does not pass the test in the specified predicate function, or default(<paramref name="TSource"/>) if no such element is found.
+        /// The single element in the sequence that does not pass the test in the specified predicate function, or default(<typeparamref name="TSource"/>) if no such element is found.
         /// </returns>
         /// <param name="source">An <see cref="T:System.Collections.Generic.IEnumerable`1"/> to return an element from.</param>
         /// <param name="predicate">A function to test each element for a complement condition.</param>
@@ -93,6 +97,43 @@ namespace SystemExtensions
         {
             // ReSharper disable once CompareNonConstrainedGenericWithNull
             return source.Where(e => e != null);
+        }
+
+        public static IEnumerable<T> TopologicalSort<T>(this IEnumerable<T> source, Func<T, IEnumerable<T>> dependenciesGetter, bool throwOnCycle = false)
+        {
+            var sorted = new List<T>();
+            var stack = new Stack<T>(10);
+
+            foreach (var item in source)
+                Visit(item, stack, sorted, dependenciesGetter, throwOnCycle);
+
+            return sorted;
+        }
+
+        private static void Visit<T>(T item, Stack<T> stack, List<T> sorted, Func<T, IEnumerable<T>> dependencies, bool throwOnCycle)
+        {
+            if (!stack.Contains(item))
+            {
+                stack.Push(item);
+
+                try
+                {
+                    foreach (var dep in dependencies(item))
+                        Visit(dep, stack, sorted, dependencies, throwOnCycle);
+                }
+                finally
+                {
+                    stack.Pop();
+                }
+
+                if (!sorted.Contains(item))
+                    sorted.Add(item);
+            }
+            else
+            {
+                if (throwOnCycle)
+                    throw new Exception("Cyclic dependency found");
+            }
         }
     }
 }

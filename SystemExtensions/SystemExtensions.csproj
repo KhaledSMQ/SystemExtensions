@@ -39,7 +39,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DictionaryExtensions.cs" />
     <Compile Include="EnumerableExtensions.cs" />
+    <Compile Include="FuncExtensions.cs" />
     <Compile Include="JetBrains.Annotations\JetBrains.Annotations.cs" />
     <Compile Include="LinqExpressionExtensions.cs" />
     <Compile Include="Math2.cs" />

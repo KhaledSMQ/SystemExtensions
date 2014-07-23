@@ -339,5 +339,89 @@ namespace SystemExtensions
 
             return result;
         }
+
+        /// <summary>
+        /// Splits a string into enumerable parts.
+        /// This is different from Split method, because it is lazily enumerated.
+        /// </summary>
+        /// <param name="str">String to split.</param>
+        /// <param name="separator">Separator string.</param>
+        /// <param name="comparisonType">Optional comparison type to find separators inside the string to split.</param>
+        /// <param name="options">Optional splitting options.</param>
+        /// <returns>An enumeration that returns the next piece iteratively.</returns>
+        public static IEnumerable<string> EnumerableSplit(
+            [NotNull] this string str,
+            [NotNull] string separator,
+            StringComparison comparisonType = StringComparison.InvariantCulture,
+            StringSplitOptions options = StringSplitOptions.None)
+        {
+            if (str == null)
+                throw new ArgumentNullException("str");
+
+            if (separator == null)
+                throw new ArgumentNullException("separator");
+
+            return EnumerableSplitInternal(str, separator, comparisonType, options);
+        }
+
+        private static IEnumerable<string> EnumerableSplitInternal(
+            [NotNull] string str,
+            [NotNull] string value,
+            StringComparison comparisonType,
+            StringSplitOptions options)
+        {
+            var prevPos = 0;
+            while (true)
+            {
+                var nextPos = str.IndexOf(value, prevPos, comparisonType);
+
+                if (nextPos < 0)
+                    yield break;
+
+                if (options != StringSplitOptions.RemoveEmptyEntries || nextPos != prevPos)
+                    yield return str.Substring(prevPos, nextPos - prevPos);
+
+                prevPos = nextPos + value.Length;
+            }
+        }
+
+        /// <summary>
+        /// Splits a string into enumerable parts.
+        /// This is different from Split method, because it is lazily enumerated.
+        /// </summary>
+        /// <param name="str">String to split.</param>
+        /// <param name="separator">Separator character.</param>
+        /// <param name="options">Optional splitting options.</param>
+        /// <returns>An enumeration that returns the next piece iteratively.</returns>
+        public static IEnumerable<string> EnumerableSplit(
+            [NotNull] this string str,
+            char separator,
+            StringSplitOptions options = StringSplitOptions.None)
+        {
+            if (str == null)
+                throw new ArgumentNullException("str");
+
+            return EnumerableSplitInternal(str, separator, options);
+        }
+
+        private static IEnumerable<string> EnumerableSplitInternal(
+            [NotNull] string str,
+            char separator,
+            StringSplitOptions options)
+        {
+            var prevPos = 0;
+            while (true)
+            {
+                var nextPos = str.IndexOf(separator, prevPos);
+
+                if (nextPos < 0)
+                    yield break;
+
+                if (options != StringSplitOptions.RemoveEmptyEntries || nextPos != prevPos)
+                    yield return str.Substring(prevPos, nextPos - prevPos);
+
+                prevPos = nextPos + 1;
+            }
+        }
     }
 }
